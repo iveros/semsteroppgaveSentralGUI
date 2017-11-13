@@ -58,8 +58,7 @@ namespace SOKlasseLib
             {
 
             }*/
-            //string utskrift = ("Navn: " + KundeListe[KID].KundeNavn + "Kid: " + KundeListe[KID].KID);
-            string utskrift = " TestingTesting123";
+            string utskrift = ("Navn: " + KundeListe[KID].KundeNavn + "Kid: " + KundeListe[KID].KID);
             return utskrift;
             
         }

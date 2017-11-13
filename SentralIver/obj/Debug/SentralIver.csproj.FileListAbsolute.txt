@@ -21,8 +21,3 @@ C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\Sentr
 C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.csproj.CoreCompileInputs.cache
 C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.exe
 C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.pdb
-C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SentralIver\bin\Debug\SentralIver.exe.config
-C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SentralIver\bin\Debug\SentralIver.exe
-C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SentralIver\bin\Debug\SentralIver.pdb
-C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SentralIver\bin\Debug\SOKlasseLib.dll
-C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SentralIver\bin\Debug\SOKlasseLib.pdb
