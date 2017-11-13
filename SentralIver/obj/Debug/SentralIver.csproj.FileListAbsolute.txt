@@ -12,3 +12,12 @@ C:\Users\iver_\Desktop\Semesteroppgave IT\SentralIver\SentralIver\obj\Debug\Sent
 C:\Users\iver_\Desktop\Semesteroppgave IT\SentralIver\SentralIver\obj\Debug\SentralIver.exe
 C:\Users\iver_\Desktop\Semesteroppgave IT\SentralIver\SentralIver\obj\Debug\SentralIver.pdb
 C:\Users\iver_\Desktop\Semesteroppgave IT\SentralIver\SentralIver\obj\Debug\SentralIver.Kundeoversikt.resources
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.csprojResolveAssemblyReference.cache
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.Form1.resources
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.Kundeoversikt.resources
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.Properties.Resources.resources
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.RegistrerNyKunde.resources
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.csproj.GenerateResource.Cache
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.csproj.CoreCompileInputs.cache
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.exe
+C:\Users\iver_\Source\Repos\semsteroppgaveSentralGUI\SentralIver\obj\Debug\SentralIver.pdb

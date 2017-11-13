@@ -3,3 +3,7 @@ C:\D\Dropbox\5_ELE107 - Industriell IT\SemesterOppgave\semesterBesvarelse\SOKlas
 C:\D\Dropbox\5_ELE107 - Industriell IT\SemesterOppgave\semesterBesvarelse\SOKlasseLib\obj\Debug\SOKlasseLib.csprojResolveAssemblyReference.cache
 C:\D\Dropbox\5_ELE107 - Industriell IT\SemesterOppgave\semesterBesvarelse\SOKlasseLib\obj\Debug\SOKlasseLib.dll
 C:\D\Dropbox\5_ELE107 - Industriell IT\SemesterOppgave\semesterBesvarelse\SOKlasseLib\obj\Debug\SOKlasseLib.pdb
+C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.csprojResolveAssemblyReference.cache
+C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.csproj.CoreCompileInputs.cache
+C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.dll
+C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.pdb
