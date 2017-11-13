@@ -243,7 +243,7 @@ namespace SOKlasseLib
             }
             catch (Exception ex) //viser feilmelding -da må vi prøve med en annen comPort.
             {
-                MessageBox.Show("Feil, ved etablering med av seriell-Tråd. ", ex.Message.ToString()); //error 
+                //MessageBox.Show("Feil, ved etablering med av seriell-Tråd. ", ex.Message.ToString()); //error 
             }
         }
 

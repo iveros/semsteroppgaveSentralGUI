@@ -7,3 +7,5 @@ C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKla
 C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.csproj.CoreCompileInputs.cache
 C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.dll
 C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\obj\Debug\SOKlasseLib.pdb
+C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\bin\Debug\SOKlasseLib.dll
+C:\Users\iver_\source\repos\semsteroppgaveSentralGUI\SOKlasseLib\bin\Debug\SOKlasseLib.pdb
