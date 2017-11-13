@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 //test
 //test eirik
-//test branch
 namespace SOKlasseLib
 {
     interface InterfaceSentral
