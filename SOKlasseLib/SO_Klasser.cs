@@ -8,15 +8,15 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-//nyeste klasseLib tester opplastning til git
-
+//test
+//test eirik
 namespace SOKlasseLib
 {
     interface InterfaceSentral
     {
         void RegistrerKunde(string innNavn, string innAdresse, int innKID, string innPassord, string ipAdresse);
         void SlettKunde(int KID);
+        void MottaForbruk();
         string GenererRapport();
         double ForbrukForesporsel(int KID);
     }
@@ -30,18 +30,19 @@ namespace SOKlasseLib
         void MottaFraKort();
         void SendTilKort(string kommando);
         void SendSentral();
-        void MottaSentral();
+        void MottaSentral(string fraAdresse);
     }
 
     public class Sentral : InterfaceSentral
     {
-        static public List<Kunde> KundeListe;
+        public List<Kunde> KundeListe;
+        public string SentralIP { get; set; }
         private Socket kommSokkel;      //socket for å motta data fra klient
-        static public string SentralIP = "127.0.0.1";       //IP-adresse for å koble seg til server
 
         public Sentral()
         {
             KundeListe = new List<Kunde>();
+            SentralIP = "127.0.0.1";
         }
 
         public void RegistrerKunde(string innNavn, string innAdresse, int innKID, string innPassord, string ipAdresse)
@@ -49,13 +50,28 @@ namespace SOKlasseLib
             KundeListe.Add(new Kunde(innNavn, innAdresse, innKID, innPassord, ipAdresse));
         }
 
+
+         // DETTE ER EN MIDLERTIDIG FUNKSJON FOR Å SKRIVE UT KUNDELISE
+        public string SkrivUtKundeliste(int KID)
+        {
+            /*for(int i = 1; i <= KID; i++)
+            {
+
+            }*/
+            string utskrift = ("Navn: " + KundeListe[KID].KundeNavn + "Kid: " + KundeListe[KID].KID);
+            return utskrift;
+            
+        }
+
+
+
         public void SlettKunde(int KID)
         {
-            if (KundeListe[GetKIDIndex(KID)] != null)
+            if (KundeListe[IndexKID(KID)] != null)
                 KundeListe.RemoveAt(KID);
         }
 
-        static public int GetKIDIndex(int finnKID)
+        public int IndexKID(int finnKID)
         {
             int returnIndex = -1;
             for (int i = 0; i < KundeListe.Count; i++)
@@ -64,6 +80,11 @@ namespace SOKlasseLib
                     returnIndex = i;
             }
             return returnIndex;
+        }
+
+        public void MottaForbruk() //regelmessig mottak
+        {
+            throw new NotImplementedException();
         }
 
         public string GenererRapport()
@@ -78,7 +99,7 @@ namespace SOKlasseLib
             //svarer med å sende forbruket fra hus
 
             Socket lytteSokkel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint sentralServer = new IPEndPoint(IPAddress.Parse(SentralIP), 9050);    //oppretter server for å motta forespørsel fra HUS og KUNDE
+            IPEndPoint sentralServer = new IPEndPoint(IPAddress.Parse(SentralIP), 9050);    //oppretter server for å motta klienter
 
             lytteSokkel.Bind(sentralServer);    //ser etter nye klienter som kobler seg til serverKobling
             lytteSokkel.Listen(10);
@@ -86,21 +107,21 @@ namespace SOKlasseLib
             int recv = -1;
             while (recv != 0)   //recv = 0 når det sendes en tom melding
             {
-                //Console.Write("\nVenter på tilkobling fra klient. ");
+                Console.Write("\nVenter på tilkobling fra klient. ");
                 kommSokkel = lytteSokkel.Accept();   //setter kommSokkel til referanse til nye tilkoblingen
 
                 byte[] mottatData = new byte[1024];
-                recv = kommSokkel.Receive(mottatData);      //mottar data fra HUS og KUNDE
+                recv = kommSokkel.Receive(mottatData);      //mottar data fra kunde
                 string mottattTekst = Encoding.ASCII.GetString(mottatData, 0, recv);
 
-                if (mottattTekst.Contains("LOGGINN="))      //hvis en KUNDE prøver å logge seg inn
+                if (mottattTekst.Contains("LOGGINN="))      //hvis en kunde prøver å logge seg inn
                 {
-                    //Console.WriteLine("Mottat kundelogginn");
+                    Console.WriteLine("Mottat kundelogginn");
                     behandleLoggInn(mottattTekst);
                 }
-                else if (mottattTekst.Contains("TIDSOPPDATERING:"))     //regelmessig forbruk fra HUS
+                else if (mottattTekst.Contains("TIDSOPPDATERING:"))     //regelmessig forbruk fra hus
                 {
-                    //Console.WriteLine("Mottat tidsoppdatering fra hus");
+                    Console.WriteLine("Mottat tidsoppdatering fra hus");
                     behandleRegelmessig(mottattTekst);
                 }
             }
@@ -109,26 +130,28 @@ namespace SOKlasseLib
 
         private void behandleLoggInn(string kundeTekst)
         {
-            //Console.WriteLine(kundeTekst);
+            Console.WriteLine(kundeTekst);
 
-            int kidLengde = kundeTekst.IndexOf(',') - kundeTekst.IndexOf('=');  //brukes til å skille ut KID fra sendt data
+            int kidLengde = kundeTekst.IndexOf(',') - kundeTekst.IndexOf('=');
             int innKID = Convert.ToInt32(kundeTekst.Substring(
                 kundeTekst.IndexOf('=') + 1, kidLengde - 1));     //skiller ut KID fra sendt data
 
-            int passordLengde = kundeTekst.IndexOf('#') - kundeTekst.IndexOf(',');  //brukes til å skille ut passord fra sendt data
+            int passordLengde = kundeTekst.IndexOf('#') - kundeTekst.IndexOf(',');
             string innPassord = kundeTekst.Substring(
                 kundeTekst.IndexOf(',') + 1, passordLengde - 1);  //skiller ut passord fra sendt data
 
-            if (KundeListe[GetKIDIndex(innKID)].KID == innKID &&
-                KundeListe[GetKIDIndex(innKID)].Passord.Equals(innPassord)) //hvis både KID og passord er riktig
+            if (KundeListe[IndexKID(innKID)].KID == innKID &&
+                KundeListe[IndexKID(innKID)].Passord.Equals(innPassord)) //hvis både KID og passord er riktig
             {
-                double lagretForbruk = KundeListe[GetKIDIndex(innKID)].Forbruk;  //DENNE MÅ ENDRES UT FRA TOLKING AV OPPGAVE (momentan eller oppspart forbruk)
+                double lagretForbruk = KundeListe[IndexKID(innKID)].Forbruk;  //DENNE MÅ ENDRES UT FRA TOLKING AV OPPGAVE
 
-                //Console.WriteLine("Riktig logginn");
+                Console.WriteLine("Riktig logginn");
+                IPEndPoint klientServer =
+                    new IPEndPoint(IPAddress.Parse(KundeListe[IndexKID(innKID)].IPAdresse), 9050); //oppretter kobling til kunde sin IP
                 byte[] forbrukSvar = Encoding.ASCII.GetBytes(lagretForbruk.ToString());    //finner forbruk fra HUS-klassen
 
                 //kommSokkel.Connect(klientServer);     //trenger ikke connect fordi er allerede koblet til server
-                kommSokkel.Send(forbrukSvar, forbrukSvar.Length, SocketFlags.None);     //svarer kunde gjennom samme kommsokkel som mottak kundedata
+                kommSokkel.Send(forbrukSvar, forbrukSvar.Length, SocketFlags.None);     //svarer kunde med å sende forbruk
             }
             else
                 throw new ArgumentException("Feil KID eller passord");
@@ -146,38 +169,38 @@ namespace SOKlasseLib
             int forbrukLengde = husTekst.IndexOf('#') - husTekst.LastIndexOf('=');
             string innForbruk = husTekst.Substring(husTekst.LastIndexOf('=') + 1, forbrukLengde - 1);  //skiller ut forbruk fra sendt data
 
-            ////Console.WriteLine(husTekst);
-            KundeListe[GetKIDIndex(innKID)].Forbruk = Convert.ToDouble(innForbruk);     //lagrer mottat forbruk i kundelisten
+            //Console.WriteLine(husTekst);
+            KundeListe[IndexKID(innKID)].Forbruk = Convert.ToDouble(innForbruk);
         }
 
         public double ForbrukForesporsel(int KID)    //sender forespørsel til HUS og returnerer fobruk
         {
             double returVerdi = -1;
-            byte[] sendData = Encoding.ASCII.GetBytes("forbruk");   //hus-klassen reagerer på forespørsel som inneholder ordet "forbruk"
+            byte[] sendData = Encoding.ASCII.GetBytes("forbruk");   //hus-klassen reagerer på forespørsel som inneholder "forbruk"
 
-            Socket husSokkel =
+            Socket klientSokkel =
                 new Socket(AddressFamily.InterNetwork, SocketType.Stream,
-                    ProtocolType.Tcp);  //må ha ny kommunikasjonssokkel for ny IPadresse til huset
-            IPEndPoint husServer =
-                new IPEndPoint(IPAddress.Parse(KundeListe[GetKIDIndex(KID)].IPAdresse),
-                    9051);   //oppretter server med IPadresse til huset
-            husSokkel.Connect(husServer); //kobler til server
-            husSokkel.Send(sendData, sendData.Length, SocketFlags.None); //sender data til klient (hus)
+                    ProtocolType.Tcp); //oppretter kommunikasjonssokkel
+            IPEndPoint klientServer =
+                new IPEndPoint(IPAddress.Parse(KundeListe[IndexKID(KID)].IPAdresse),
+                    9050); //oppretter server med adresse og portnummer
+            klientSokkel.Connect(klientServer); //kobler til server
+            klientSokkel.Send(sendData, sendData.Length, SocketFlags.None); //sender data til klient (hus)
 
             int recv = -1;
             while (recv != 0)
             {
                 byte[] mottatData = new byte[1024];
-                recv = husSokkel.Receive(mottatData);    //mottar data fra hus
-                string mottattTekst = Encoding.ASCII.GetString(mottatData, 0, recv);    //konverterer mottat data til string
-                //Console.WriteLine(mottattTekst);
+                recv = klientSokkel.Receive(mottatData);    //mottar data fra hus
+                string mottattTekst = Encoding.ASCII.GetString(mottatData, 0, recv);
+                Console.WriteLine(mottattTekst);
 
-                if (mottattTekst.Contains("kWh"))   //hvis mottat data inneholder "kWh" betyr det at hus har sendt forbruksdata
+                if (mottattTekst.Contains("kWh"))
                 {
-                    int forbrukLengde = mottattTekst.IndexOf("kWh") - mottattTekst.IndexOf('=');    //brukes for å skille ut forbruk fra mottat data
+                    int forbrukLengde = mottattTekst.IndexOf("kWh") - mottattTekst.IndexOf('=');
                     double funnetForbruk =
-                        Convert.ToDouble(mottattTekst.Substring(mottattTekst.IndexOf('=') + 2, forbrukLengde - 2)); //skiller ut forbruket fra mottat data
-                    //Console.WriteLine(funnetForbruk);
+                        Convert.ToDouble(mottattTekst.Substring(mottattTekst.IndexOf('=') + 2, forbrukLengde - 2));
+                    Console.WriteLine(funnetForbruk);
                     returVerdi = funnetForbruk;
                 }
             }
@@ -185,7 +208,7 @@ namespace SOKlasseLib
         }
     }
 
-    public class Hus : InterfaceHus     //kjent brukerveiledning til dokumentasjon: MÅ opprette KUNDE før HUS kan opprettes
+    public class Hus : InterfaceHus
     {
         //kommuniserer med SENTRAL over TCP/IP
         //mottar informasjon fra sensorkort over seriell kommunikasjon
@@ -193,12 +216,11 @@ namespace SOKlasseLib
         public double Forbruk { get; set; }
         public int SendSentralIntervall { get; set; }
         public int KID { get; set; }
-        public string EgenIP { get; set; }
-        private IPEndPoint SentralServer;
 
         private string DatoKlokkeslett;
 
         SerialPort dataPort = new SerialPort("COM3", 9600, Parity.None, 8);
+        
 
         char tegn;
         string data = "";
@@ -209,11 +231,21 @@ namespace SOKlasseLib
         {
             Forbruk = -1;   //foreløpig ikke mottat data om forbruk
             KID = kid;
-            SendSentralIntervall = 1;   //standard er 15
+            SendSentralIntervall = 1;   //standard er 15            
+        }
+       public void SettCOMPortOgStartTraad(string nyComPort)
+        {
             ThreadStart ts = new ThreadStart(MottaFraKort);
-            Thread leseTraad = new Thread(ts);
-            EgenIP = Sentral.KundeListe[Sentral.GetKIDIndex(KID)].IPAdresse;
-            SentralServer = new IPEndPoint(IPAddress.Parse(Sentral.SentralIP), 9050); //oppretter server med adresse og portnummer
+            Thread seriellTraad = new Thread(ts);
+            dataPort = new SerialPort(nyComPort, 9600, Parity.None, 8);
+            try
+            {
+                seriellTraad.Start();
+            }
+            catch (Exception ex) //viser feilmelding -da må vi prøve med en annen comPort.
+            {
+                //MessageBox.Show("Feil, ved etablering med av seriell-Tråd. ", ex.Message.ToString()); //error 
+            }
         }
 
         public void MottaFraKort()    //Jeg ønsker at vi definerer COM-porten i konstruktøren, ellers må det inn som variabel hver gang vi sender info, og den vil jo "aldri" endre seg?
@@ -279,31 +311,36 @@ namespace SOKlasseLib
         //brukes for å kunne sende forbruk hvert 15 minutt og når HUS får forespørsel fra SENTRAL
         public void SendSentral()
         {
+            string serverIP = "127.0.0.1";
+
             Socket klientSokkel =
                 new Socket(AddressFamily.InterNetwork, SocketType.Stream,
-                    ProtocolType.Tcp); //oppretter kommunikasjonssokkel til sentral
-            klientSokkel.Connect(SentralServer);    //kobler til sentralserveren
-            string forbrukSvar = string.Format("TIDSOPPDATERING: KID = {0}. Forbruk = {1}#", KID, Forbruk);
+                    ProtocolType.Tcp); //oppretter kommunikasjonssokkel
+            IPEndPoint
+                klientServer =
+                    new IPEndPoint(IPAddress.Parse(serverIP), 9050); //oppretter server med adresse og portnummer
+            klientSokkel.Connect(klientServer);
+            string forbrukSvar = string.Format("TIDSOPPDATERING: KID = {0}. Forbruk = {1}#", KID, 2063);
             byte[] forbrukByte = Encoding.ASCII.GetBytes(forbrukSvar);
 
             klientSokkel.Send(forbrukByte, forbrukByte.Length, SocketFlags.None);
         }
 
         //når HUS mottar forespørsel fra SENTRAL svarer den med å sende forbruk tilbake
-        public void MottaSentral()
+        public void MottaSentral(string fraAdresse)
         {
             Socket lytteSokkel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint husServer = new IPEndPoint(IPAddress.Parse(EgenIP), 9051);   //oppretter server der HUS mottar forbruksforespørsel fra SENTRAL
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse(fraAdresse), 9050);
 
-            lytteSokkel.Bind(husServer);
+            lytteSokkel.Bind(serverEP);
             lytteSokkel.Listen(10);     //venter på forespørsel
-            ////Console.WriteLine("Venter på forespørsel");
-            Socket kommSokkel = lytteSokkel.Accept();   //mottar forespørsel fra klient (sentral)
+            //Console.WriteLine("Venter på forespørsel");
+            Socket kommSokkel = lytteSokkel.Accept(); //mottar forespørsel fra klient (sentral)
 
-            ////Console.WriteLine("Klient koblet til. Venter på forespørsel");
+            //Console.WriteLine("Klient koblet til. Venter på forespørsel");
             string svarString = string.Format("Koblet til HUS med KID: {0}. Venter på forespørsel", KID);
             byte[] sendData = Encoding.ASCII.GetBytes(svarString);
-            kommSokkel.Send(sendData, sendData.Length, SocketFlags.None); //HUS svarer når SENTRAL er koblet til
+            kommSokkel.Send(sendData, sendData.Length, SocketFlags.None); //hus svarer når sentral er koblet til
 
             int recv = -1;
             while (recv != 0)
@@ -317,8 +354,7 @@ namespace SOKlasseLib
                 {
                     svarString = string.Format("HUS: {0}. Forbruk = {1}kWh", KID, Forbruk);
                     sendData = Encoding.ASCII.GetBytes(svarString);
-                    kommSokkel.Send(sendData, sendData.Length, SocketFlags.None); //HUS svarer forbruksforespørselen
-                    ////Console.WriteLine(svarString);
+                    kommSokkel.Send(sendData, sendData.Length, SocketFlags.None); //hus svarer sentral med å sende forbruk
                 }
                 else
                 {
@@ -362,6 +398,11 @@ namespace SOKlasseLib
             IPAdresse = innIPadresse;
         }
 
+        
+
+
+
+
         public Kunde(int innKID, string innPassord)
         {
             KID = innKID;
@@ -377,9 +418,9 @@ namespace SOKlasseLib
             Socket klientSokkel =
                 new Socket(AddressFamily.InterNetwork, SocketType.Stream,
                     ProtocolType.Tcp);      //oppretter kommunikasjonssokkel
-            IPEndPoint SentralServer =
-                    new IPEndPoint(IPAddress.Parse(Sentral.SentralIP), 9050);    //oppretter informasjon for å koble til server
-            klientSokkel.Connect(SentralServer);    //kobler til sentralserveren
+            IPEndPoint klientServer =
+                    new IPEndPoint(IPAddress.Parse(IPAdresse), 9050);    //oppretter server med adresse og portnummer
+            klientSokkel.Connect(klientServer); //kobler til server
             klientSokkel.Send(sendData, sendData.Length, SocketFlags.None);     //sender data til klient (sentral)
 
             //trenger ikke: while(recv != 0)
@@ -387,8 +428,8 @@ namespace SOKlasseLib
             int recv = klientSokkel.Receive(mottatData);
             string mottattTekst = Encoding.ASCII.GetString(mottatData, 0, recv);
 
-            //Console.WriteLine("Mottat tekst: " + mottattTekst);
-            Forbruk = Convert.ToDouble(mottattTekst);   //lagrer mottat forbruk
+            Console.WriteLine("Mottat tekst: " + mottattTekst);
+            Forbruk = Convert.ToDouble(mottattTekst);
 
             klientSokkel.Close();
         }
