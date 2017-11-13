@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+//test
 namespace SOKlasseLib
 {
     interface InterfaceSentral
@@ -233,15 +233,18 @@ namespace SOKlasseLib
             KID = kid;
             SendSentralIntervall = 1;   //standard er 15            
         }
-        public void SettCOMPort(string comPort)
+       public void SettCOMPortOgStartTraad(string nyComPort)
         {
+            ThreadStart ts = new ThreadStart(MottaFraKort);
+            Thread seriellTraad = new Thread(ts);
+            dataPort = new SerialPort(nyComPort, 9600, Parity.None, 8);
             try
             {
-                seriellTraad.Start(comPort);
+                seriellTraad.Start();
             }
-            catch(Exception ex) //viser feilmelding -da må vi prøve med en annen comPort.
+            catch (Exception ex) //viser feilmelding -da må vi prøve med en annen comPort.
             {
-                errordlg("Feil, finner ikke ComPort");
+                MessageBox.Show("Feil, ved etablering med av seriell-Tråd. ", ex.Message.ToString()); //error 
             }
         }
 
