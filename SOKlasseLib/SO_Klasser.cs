@@ -219,8 +219,7 @@ namespace SOKlasseLib
         private string DatoKlokkeslett;
 
         SerialPort dataPort = new SerialPort("COM3", 9600, Parity.None, 8);
-        ThreadStart ts = new ThreadStart(MottaFraKort);
-        Thread seriellTraad = new Thread(ts);
+        
 
         char tegn;
         string data = "";
