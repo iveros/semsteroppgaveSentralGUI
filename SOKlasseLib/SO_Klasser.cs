@@ -248,58 +248,76 @@ namespace SOKlasseLib
             }
         }
 
-        public void MottaFraKort()    //Jeg ønsker at vi definerer COM-porten i konstruktøren, ellers må det inn som variabel hver gang vi sender info, og den vil jo "aldri" endre seg?
+        public void MottaFraKort()
         {
+            //Åpner kanal for seriell-kommunikasjon
 
-            dataPort.Open();                                                                        //Åpner kanal for seriell-kommunikasjon
-
-            while (true)                                                                            //Tråden lytter konstant
+            try
             {
-                if (dataPort.IsOpen)                                                                //Vi har forbindelse
+                dataPort.Open();
+
+                if (dataPort.IsOpen)
                 {
-                    tegn = Convert.ToChar(dataPort.ReadChar());                                     //leser symbol fra dataport, lagres på 'tegn'
-                    if (tegn == '#')                                                                //dette betyr at vi har mottatt hele strengen
+                    /* 
+                     * Bruk følgende (eller tilsvarende) når du jobber med sensorkortet 
+                     * Andre mulige kommandoer finner du beskrevet i kort-dokumentasjonen
+                     */
+                    // dataPort.Write("$S002");
+
+                    while (true)
                     {
-                        Dato = data.Substring(8, 8);                                                //Vi skiller ut Dato
-                        Kl = data.Substring(17, 6);                                                 //-Klokkeslett
-                        DatoKlokkeslett = Dato + " " + Kl;
+                        tegn = Convert.ToChar(dataPort.ReadChar());
+                        if (tegn == '#')
+                        {
+                            data = data + '#';
 
-                        PotF = data.Substring(38, 4);                                               //-forbruk1
-                        PotG = data.Substring(43, 4);                                               //-og forbruk2
+                            if (data.Length == 65 && data[0] == '\n' && data[64] == '#')                    //Stringen må ha riktig lengde, starte og avslutte med riktig tegn
+                            {
+                                Dato = data.Substring(data.IndexOf("B") + 1, 4);
+                                Kl = data.Substring(data.IndexOf("C") + 1, 6);
+                                DatoKlokkeslett = Dato + " " + Kl;
 
-                        momentantForbruk = (Convert.ToInt16(PotF) + Convert.ToInt16(PotG)) / 2.0;     //regner ut snitt av momentanforbruket
-                        Forbruk += momentantForbruk / (3600);                                        //legger momentanforbruket til det totale forbruket (Gjør om til KWh)
+                                PotF = data.Substring(data.IndexOf("F") + 1, 4);
+                                PotG = data.Substring(data.IndexOf("G") + 1, 4);
+                                momentantForbruk = Convert.ToInt16(PotG) + Convert.ToInt16(PotF);
 
-                        if (data[24] == 1)                                                          //Sjekker om DI 1 er høy
-                            dataPort.Write("$O01");                                                 //LED-lys 0 PÅ - Alarm1: Hus ikke kontakt med sentral
+                                Forbruk += momentantForbruk / 3600.00;                                      //legger momentanforbruket til det totale forbruket (Gjør om til KWh)
+
+
+                                if (data[24] == 1)                                                          //Sjekker om DI 1 er høy
+                                    dataPort.Write("$O01");                                                 //LED-lys 0 PÅ - Alarm1: Hus ikke kontakt med sentral
+                                else
+                                    dataPort.Write("$O00");                                                 //LED-lys 0 AV
+
+                                if (momentantForbruk > 800)
+                                    dataPort.Write("$O11");                                                 //LED-lys 1 PÅ -Alarm2:Forbruk over 8KWh 
+                                else
+                                    dataPort.Write("$O10");                                                 //LED-lys 1 AV
+
+                                if (Math.Abs(Convert.ToInt16(PotF)) - Math.Abs(Convert.ToInt16(PotG)) > 20) //Sjekker etter feil på mer enn 0.2 KWh mellom målerene
+                                    dataPort.Write("$O21");                                                 //LED-lys 2 PÅ -Alarm3:Feil på måleutstyr ->Stor differanse (0.2Kw)
+                                else
+                                    dataPort.Write("$O20");
+                            }
+                            data = "";
+                            Thread.Sleep(800);
+                        }
                         else
-                            dataPort.Write("$O00");                                                 //LED-lys 0 AV
-
-                        if (momentantForbruk > 800)
-                            dataPort.Write("$O11");                                                 //LED-lys 1 PÅ -Alarm2:Forbruk over 8KWh 
-                        else
-                            dataPort.Write("$O10");                                                 //LED-lys 1 AV
-
-                        if (Math.Abs(Convert.ToInt16(PotF)) - Math.Abs(Convert.ToInt16(PotG)) > 20) //Sjekker etter feil på mer enn 0.2 KWh mellom målerene
-                            dataPort.Write("$O21");                                                 //LED-lys 2 PÅ -Alarm3:Feil på måleutstyr ->Stor differanse (0.2Kw)
-                        else
-                            dataPort.Write("$O20");                                                 //LED-lys 2 AV
-                        data = "";                                                                  //nullstiller data strengen - klar for neste runde
-                    }
-                    else                                                                            //Hvis ikke #, altså ikke mottatt hele strengen.
-                    {
-                        data = data + tegn;                                                         //Legger neste tegn til i strengen data
+                        {
+                            data = data + tegn;
+                        }
                     }
                 }
-                else//DET E BRUDD I KOBLINGEN!!!!!!! -skal vi foreta oss noe her?Prøv å etablere pånytt?
-                {
-                    /*
-                    dataPort.Close();
-                    dataPort.Dispose(); 
-                    dataPort.Open();
-                    */
-                }
-                Thread.Sleep(1000);     //sov (ressurssparing)
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Feil: " + ex.Message);
+            }
+
+            finally
+            {
+                if (dataPort.IsOpen) dataPort.Close();
             }
         }
 
