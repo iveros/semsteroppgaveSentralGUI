@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 //test
 //test eirik
 namespace SOKlasseLib
@@ -219,7 +220,7 @@ namespace SOKlasseLib
 
         private string DatoKlokkeslett;
 
-        SerialPort dataPort = new SerialPort("COM3", 9600, Parity.None, 8);
+        [NonSerialized]SerialPort dataPort;  //Må være ikke-serialiserbar for å unngå exception ved serialisering av objektet hus.
         
 
         char tegn;
@@ -244,7 +245,7 @@ namespace SOKlasseLib
             }
             catch (Exception ex) //viser feilmelding -da må vi prøve med en annen comPort.
             {
-                //MessageBox.Show("Feil, ved etablering med av seriell-Tråd. ", ex.Message.ToString()); //error 
+                MessageBox.Show("Feil, ved etablering med av seriell-Tråd. ", ex.Message.ToString()); //error 
             }
         }
 
@@ -271,7 +272,7 @@ namespace SOKlasseLib
                         {
                             data = data + '#';
 
-                            if (data.Length == 65 && data[0] == '\n' && data[64] == '#')                    //Stringen må ha riktig lengde, starte og avslutte med riktig tegn
+                            if (data.Length == 65 && data[0] == '\n' && data[data.Length-1] == '#')//Stringen må ha riktig lengde NB sjekk at lengden er 65 hvis det ikke fungerer(65 i simsim), starte og avslutte med riktig tegn
                             {
                                 Dato = data.Substring(data.IndexOf("B") + 1, 4);
                                 Kl = data.Substring(data.IndexOf("C") + 1, 6);
@@ -282,8 +283,7 @@ namespace SOKlasseLib
                                 momentantForbruk = Convert.ToInt16(PotG) + Convert.ToInt16(PotF);
 
                                 Forbruk += momentantForbruk / 3600.00;                                      //legger momentanforbruket til det totale forbruket (Gjør om til KWh)
-
-
+                                
                                 if (data[24] == 1)                                                          //Sjekker om DI 1 er høy
                                     dataPort.Write("$O01");                                                 //LED-lys 0 PÅ - Alarm1: Hus ikke kontakt med sentral
                                 else
@@ -309,22 +309,20 @@ namespace SOKlasseLib
                     }
                 }
             }
-
             catch (Exception ex)
             {
-                Console.WriteLine("Feil: " + ex.Message);
+                MessageBox.Show("Feil ved lesing av serielldata. ", ex.Message.ToString());
             }
-
             finally
             {
                 if (dataPort.IsOpen) dataPort.Close();
             }
         }
 
-        public void SendTilKort(string kommando) //Tenker vi kun sender kommando som variabel, så kan vi ha noen kommandoer å velge mellom i GUI. 
-        {                                        // Vi må bestemme når vi skal definere hvilken COM-port som brukes. Jeg vil ha det i konstruktøren.
-            dataPort.Write(kommando);            // Dette kan vel være i konstruktøren siden en teknikker(eller noe sånt) installerer systemet for kunden?
-        }                                        // Da slipper vi å definere det i alle funksjoner som er avhengig av Seriell kommunikasjon. - Kent
+        public void SendTilKort(string kommando) //finn kommandoene i dokumentasjonen til kortet
+        {                                        
+            dataPort.Write(kommando);            
+        }                                        
 
         //brukes for å kunne sende forbruk hvert 15 minutt og når HUS får forespørsel fra SENTRAL
         public void SendSentral()
